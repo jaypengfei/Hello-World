@@ -1,0 +1,482 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>SEARCH</title>
+<style>
+body
+{
+	overflow: hidden;	
+}
+#div-main
+{
+	width:100%;
+	height:100%;
+	padding-top:80px; 
+	padding-left: 70px;
+}
+#div-user-caozuo
+{
+	position: fixed;
+	width:40%;
+	height:40%;
+	border-radius: 20px;
+	left:30%;
+	top:30%;
+	background-color: #ffffff;
+	line-height: 25px;
+	text-align: center;
+	padding: 10px 0 10px 0;
+	display: none;
+}
+#div-user-caozuo-large
+{
+	position: absolute;
+	width:46%;
+	height:46%;
+	left:27%;
+	top:27%;
+	display: none;
+}
+#div-about-large
+{
+	position: absolute;
+	width:46%;
+	height:46%;
+	left:27%;
+	top:27%;
+	display: none;
+}
+#div-about
+{
+	position: fixed;
+	width:40%;
+	height:40%;
+	border-radius: 20px;
+	left:30%;
+	top:30%;
+	background-color: #ffffff;
+	line-height: 5px;
+	text-align: center;
+	padding: 10px 0 10px 0;
+	display: none;
+}
+#CityId
+{
+	width:100px;
+}
+#cans
+{
+	background-color: #d0d0d0;
+	 
+}
+#navi
+{
+	position: fixed;
+	height:60px;
+	width:500px;
+	left:800px;
+	top:2px;
+	//background-color: red;
+	border-radius: 5px;
+}
+#navi a
+{
+	text-decoration: none;
+	display: inline-block;
+	cursor: hand;
+	font:"宋体";
+	font-size: 15px;
+}
+#navi a:hover
+{
+	//background-color: #d0d0d0;
+	//font-size:20px;
+	text-decoration: underline;
+
+}
+ul ,li
+{
+	list-style:none;
+	margin-left:30px;
+}
+li
+{
+	display: inline;
+
+}
+#dfs-close:hover
+{
+	
+}
+#dfs-close
+{
+	position: absolute;
+	left:580px;
+	top:10px;
+}
+</style>
+
+</head>
+<body>
+	<div id="navi">
+		<ul>
+			<li><a onclick="s1Click();">DFS</a></li>
+			<li><a onclick="">BFS</a></li>
+			<li><a onclick="">minDistance</a></li>
+			<li><a onclick="aboutClick();">about</a></li>
+		</ul>
+	</div>
+	<div id="div-main">
+	
+		<canvas id="cans" width="1200" height="500" >您的浏览器不支持canvas标签</canvas>
+	</div>
+	<div id="div-user-caozuo-large" class="div-out">
+		<a id="dfs-close" onclick="dfsClose();" style="right:1px;cursor:hand;">×</a>
+		<div id="div-user-caozuo" class="div-out"><br/><br/>
+			City ID：<input id="CityId" placeholder="请输入编号"></input>
+			<button id="BtnDFS" onclick="btn_click();">DFS</button><br/><br/>
+			<lable id="lableResult"></lable>
+		</div>
+	</div>
+	<div id="div-about-large" class="div-out">
+		<a id="dfs-close" onclick="aboutClose();" style="right:1px;cursor:hand;">×</a>
+		<div id="div-about" class="div-out">
+			<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+			<p>Theory is when you konw everything but nothing works.</p>
+			<p>Practice is when everything works but no one knows why.</p>
+			<p>In our lab,theory and practice are combined:nothing works</p> 
+			<p>and no one konws why.</p>
+		</div>
+	</div>
+</body>
+<script>
+/*
+	地图信息定义
+		name：名称
+		id：编号
+		adjoin：邻接城市的编号，其中前半部分是编号，后半部分则是对应到其的距离
+*/
+//lableResult.innerHTML = "搜索编号顺序为:\r\n";  
+var map = [
+		{
+			name:'北京',
+			scale:"large",
+		 	id:0,
+		 	adjoin:[1,3],
+		 	location:[1000,50]
+		 	
+	    },
+		{
+			name:'石家庄',
+			id:1,
+			scale:"big",
+			adjoin:[0,2,4,3,3,2],
+			location:[950,100]
+			
+		},
+		{
+			name:'济南',
+			id:2,
+			scale:"big",
+			adjoin:[1,3,5,11,3,4,7,8],
+			location:[960,200]
+			
+		},
+		{
+			name:'青岛',
+			id:3,
+			scale:"big",
+			adjoin:[2,4],
+			location:[1050,220]
+		},
+		{
+			name:'太原',
+			id:4,
+			scale:'small',
+			adjoin:[1,5,6,7,2,4,6,16],
+			location:[700,100]
+		},
+		{
+			name:'郑州',
+			id:5,
+			scale:'small',
+			adjoin:[2,4,6,10,7,4,7,7],
+			location:[730,160]
+		},
+		{
+			name:'西安',
+			id:6,
+			scale:"big",
+			adjoin:[4,5,7,15,6,12,7,11],
+			location:[530,180]
+		},
+		{
+			name:'兰州',
+			id:7,
+			scale:"small",
+			adjoin:[4,6,8,16,12,15],
+			location:[330,140]
+		},
+		{
+			name:'成都',
+			id:8,
+			scale:"large",
+			adjoin:[7,9,15,3],
+			location:[230,260]
+		},
+		{
+			name:'重庆',
+			id:9,
+			scale:"big",
+			adjoin:[8,15,17,3,9,22],
+			location:[300,300]
+		},
+		{
+			name:'合肥',
+			id:10,
+			scale:"big",
+			adjoin:[5,11,15,7,2,3],
+			location:[880,260]
+		},
+		{
+			name:'南京',
+			id:11,
+			scale:"big",
+			adjoin:[2,10,12,8,2,1],
+			location:[950,280]
+		},
+		{
+			name:'苏州',
+			id:12,
+			scale:"small",
+			adjoin:[11,13,1,1],
+			location:[1020,270]
+		},
+		{
+			name:'上海',
+			id:13,
+			scale:"large",
+			adjoin:[12,14,1,2],
+			location:[1100,280]
+		},
+		{
+			name:'杭州',
+			id:14,
+			scale:"big",
+			adjoin:[13,2],
+			location:[1060,300]
+		},
+		{
+			name:'武汉',
+			id:15,
+			scale:"big",
+			adjoin:[6,9,10,16,11,9,3,3],
+			location:[740,290]
+		},
+		{
+			name:'南昌',
+			id:16,
+			scale:"small",
+			adjoin:[15,17,6,3],
+			location:[780,360]
+		},
+		{
+			name:'广州',
+			id:17,
+			scale:"large",
+			adjoin:[9,15,14,17,22,8,10,3],
+			location:[760,480]
+		},
+
+	];
+
+function getCityId(){
+	var DFSCityId = document.getElementById('CityId').value;
+	if(DFSCityId === ""){
+		alert("Please input ID (from 0 to " + (map.length-1) + ")");
+	}
+	else if(DFSCityId < 0 || DFSCityId > map.length-1){
+		alert("ID not found!");
+	}
+	else{
+		var DFSAdJoin,adjoinlength;
+		for(var i=0;i<map.length;i++){
+			if(map[i].id == DFSCityId){
+				DFSAdJoin = map[i].adjoin;
+				adjoinlength = DFSAdJoin.length;
+				return DFSCityId;
+			}
+		}
+	}
+
+}
+var visited = [];
+visited.length =map.length;
+var pathStack = []; //路径压入栈中
+var searchBegin,searchEnd,searchTotal;
+function DFS(id){
+	if(isNaN(id)){
+		console.log("ID must be a positive integer or zero!");
+	}
+	else{
+
+		if(visited[id] == 1){
+
+		}
+		else{
+			
+			visited[id] = 1;
+		    console.log("City ID：" + id +" visited:" +visited);
+		    lableResult.innerHTML += id + " ";
+			for(var j = 0,count = 0; j < map.length; j++){
+				if(visited[j] == 1){
+					count++;
+					if(count  >= map.length){
+						console.log("Serach closure,total number：" + map.length);
+						var searchEnd = new Date().getTime();
+						searchTotal = searchEnd - searchBegin;
+						lableResult.innerHTML += "total time:" + searchTotal + " ms";
+						console.log("total time：" + searchTotal + "ms");
+						return;	 
+					}
+				}
+			}
+			pathStack.push(id);
+			var cityID = map[id].adjoin.slice(0,map[id].adjoin.length/2);
+			var cityDISTANCE = map[id].adjoin.slice(map[id].adjoin.length/2,map[id].adjoin.length);
+			var MAX;
+			for(var i = 0,MAX = 0;i<cityID.length;i++){
+				if(visited[cityID[i]] == 1){
+					MAX++;
+					if(MAX >= cityID){//back
+						DFS(pathStack.pop());
+					}
+				}
+				else{
+					DFS(cityID[i]);
+				}
+			}//for
+		}//else
+	}//else
+
+}//function
+
+function btn_click(){
+	lableResult.innerHTML = "Result: ";
+	searchBegin = new Date().getTime();
+	DFS(parseInt(getCityId()));
+}
+
+
+//map initial
+var cans = document.getElementById('cans');
+var ctx = cans.getContext('2d');
+ctx.strokeStyle = "red";
+var drawScale = 0;
+(function mapInitial(){
+	var tag = [];
+	tag.length = map.length;
+	for(var i = 0;i < map.length; i++ ){
+		tag[i] = 1;
+		switch(map[i].scale){//samll 5 big 10 large 15
+			case "small":
+				drawScale = 5;
+				break
+			case "big":
+				drawScale = 10;
+				break;
+			case "large":
+				drawScale = 15;
+				break;
+			default:
+				alert("Urban scale information error!(City ID: " + map[i].id + ",name: " + map[i].name + ")");
+				break;
+		}
+		
+		ctx.beginPath();
+		ctx.arc(map[i].location[0] ,map[i].location[1] ,drawScale,0,2*Math.PI);
+		ctx.stroke();
+		ctx.fillStyle="red";	
+		ctx.fill();	
+	}
+	
+})();
+
+//draw line between city
+(
+function drawLine(){
+	for(var i=0;i<map.length;i++){
+		var adjoin = map[i].adjoin.slice(0,map[i].adjoin.length/2); //adjoin array
+		for(var j= 0 ;j < adjoin.length;j++){
+			ctx.beginPath();
+			ctx.lineCap="round"; 
+			//ctx.strokeStyle="#FF9933"
+			//ctx.lineWidth=2;
+			ctx.moveTo(map[i].location[0],map[i].location[1]);
+			ctx.lineTo(map[adjoin[j]].location[0],map[adjoin[j]].location[1]);
+			ctx.stroke();
+			ctx.closePath();
+		}
+	}
+})();
+
+
+//click event
+function s1Click(){
+	var divCloseAll = document.getElementsByTagName('div');
+	for(var i = 0;i < divCloseAll.length;i++){
+		if(divCloseAll[i].className == "div-out"){
+			divCloseAll[i].style.display = "none";
+		}
+	}
+
+	var div = document.getElementById('div-user-caozuo');
+	var div2 = document.getElementById('div-user-caozuo-large');
+	div.style.display = "block";
+	div2.style.display = "block";
+
+}
+function s2Click(){
+	var divCloseAll = document.getElementsByTagName('div');
+	for(var i = 0;i < divCloseAll.length;i++){
+		if(divCloseAll[i].className == "div-out"){
+			divCloseAll[i].style.display = "none";
+		}
+	}
+
+}
+function s3Click(){
+	var divCloseAll = document.getElementsByTagName('div');
+	for(var i = 0;i < divCloseAll.length;i++){
+		if(divCloseAll[i].className == "div-out"){
+			divCloseAll[i].style.display = "none";
+		}
+	}
+
+}
+function aboutClick(){
+	var divCloseAll = document.getElementsByTagName('div');
+	for(var i = 0;i < divCloseAll.length;i++){
+		if(divCloseAll[i].className == "div-out"){
+			divCloseAll[i].style.display = "none";
+		}
+	}
+	var div = document.getElementById('div-about-large');
+	var div2 = document.getElementById('div-about');
+	div.style.display = "block";
+	div2.style.display = "block";
+}
+function dfsClose(){
+	var div = document.getElementById('div-user-caozuo');
+	var div2 = document.getElementById('div-user-caozuo-large');
+	div.style.display = "none";
+	div2.style.display = "none";
+}
+function aboutClose(){
+	var div = document.getElementById('div-about-large');
+	var div2 = document.getElementById('div-about');
+	div.style.display = "none";
+	div2.style.display = "none";
+}
+</script>
+</html>
